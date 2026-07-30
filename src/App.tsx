@@ -431,11 +431,13 @@ function App() {
 
   // ===== 结果页 =====
   if (page === "result" && result) {
+    const shareText = `我是《西游记》里的${result.name}｜${result.title}\n「${result.motto}」\n${result.rarity}的人是${result.name}，你是哪个？扫码测测👇`;
     return (
       <div style={{
         minHeight: "100vh", background: result.bgGradient, padding: "40px 16px",
         fontFamily: "'Noto Serif SC', 'STKaiti', serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center"
       }}>
+        {/* 主结果卡片 */}
         <div style={{ maxWidth: "380px", width: "100%", background: "rgba(255,255,255,0.93)", borderRadius: "24px", padding: "36px 28px", boxShadow: "0 8px 40px rgba(0,0,0,0.12)", textAlign: "center", border: "1px solid rgba(255,255,255,0.9)" }}>
           <div style={{ marginBottom: "16px" }}><CharacterAvatar character={result} size={150} /></div>
           <div style={{ fontSize: "12px", color: result.color, letterSpacing: "4px", marginBottom: "6px", fontWeight: "bold" }}>{result.title}</div>
@@ -467,13 +469,30 @@ function App() {
               onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
             >再测一次</button>
             <button onClick={() => {
-              const text = `我是《西游记》里的${result.name}\n${result.title}｜${result.motto}`;
-              if (navigator.share) navigator.share({ title: "西游记角色测试", text });
-              else { navigator.clipboard?.writeText(text); alert("已复制到剪贴板！"); }
+              if (navigator.share) navigator.share({ title: "西游记角色测试", text: shareText });
+              else { navigator.clipboard?.writeText(shareText); alert("已复制到剪贴板！发到小红书或朋友圈吧~"); }
             }} style={{ flex: 1, padding: "13px", background: "white", color: result.color, border: `1.5px solid ${result.color}`, borderRadius: "12px", fontSize: "14px", fontWeight: "bold", cursor: "pointer", transition: "transform 0.2s" }}
               onMouseEnter={e => e.currentTarget.style.transform = "scale(1.03)"}
               onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
             >📤 分享结果</button>
+          </div>
+        </div>
+
+        {/* 赞赏码区域 */}
+        <div style={{ maxWidth: "380px", width: "100%", marginTop: "20px", background: "rgba(255,255,255,0.93)", borderRadius: "24px", padding: "28px", boxShadow: "0 4px 20px rgba(0,0,0,0.08)", textAlign: "center", border: "1px solid rgba(255,255,255,0.9)" }}>
+          <div style={{ fontSize: "16px", color: "#333", marginBottom: "6px", fontWeight: "bold" }}>☕ 觉得准？请我喝杯咖啡~</div>
+          <div style={{ fontSize: "12px", color: "#999", marginBottom: "16px" }}>你的支持是我继续创作的动力 ❤️</div>
+          <div style={{ background: "white", borderRadius: "16px", padding: "16px", display: "inline-block", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+            <img src="/images/tip-qr.jpg" alt="赞赏码" style={{ width: "180px", height: "auto", borderRadius: "8px" }} />
+          </div>
+          <div style={{ fontSize: "11px", color: "#bbb", marginTop: "12px" }}>长按识别二维码 · 金额随意</div>
+        </div>
+
+        {/* 小红书引流 */}
+        <div style={{ maxWidth: "380px", width: "100%", marginTop: "16px", background: "rgba(255,255,255,0.7)", borderRadius: "16px", padding: "20px", textAlign: "center" }}>
+          <div style={{ fontSize: "13px", color: "#666", lineHeight: "1.8" }}>
+            📱 想看更多有趣测试？<br/>
+            <span style={{ color: result.color, fontWeight: "bold" }}>小红书搜索「{result.name}测试」</span>
           </div>
         </div>
       </div>
