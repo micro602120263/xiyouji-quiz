@@ -447,34 +447,23 @@ function App() {
     const isSanguo = testType === "sanguo";
     const homeTitle = isSanguo ? "你是三国里的谁？" : "你是《西游记》里的谁？";
     const homeSubtitle = isSanguo ? "30道谋略场景题 · 约3分钟完成" : "20道趣味场景题 · 约2分钟完成";
-    const homeBg = isSanguo
-      ? "linear-gradient(180deg, #f5f0e8 0%, #e8e0d0 40%, #d4c8b0 70%, #c0b090 100%)"
-      : "linear-gradient(180deg, #FFF8E7 0%, #FFE8C0 40%, #FFDAB9 70%, #FCB69F 100%)";
     const homeAccent = isSanguo ? "#1A1A2E" : "#C41E3A";
     return (
       <div style={{
         minHeight: "100vh",
-        background: homeBg,
+        background: isSanguo
+          ? "url('/images/sanguo-bg.jpg') center/cover no-repeat"
+          : "linear-gradient(180deg, #FFF8E7 0%, #FFE8C0 40%, #FFDAB9 70%, #FCB69F 100%)",
         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
         padding: "40px 20px", fontFamily: "'Noto Serif SC', 'STKaiti', serif",
         position: "relative", overflow: "hidden"
       }}>
-        {/* 三国水墨装饰元素 */}
-        {isSanguo && (
-          <>
-            <img src="/images/sanguo-deco/sword.png" alt="" style={{ position: "absolute", top: "8%", left: "5%", width: "60px", opacity: 0.15, transform: "rotate(-15deg)" }} />
-            <img src="/images/sanguo-deco/dragon.png" alt="" style={{ position: "absolute", top: "5%", right: "8%", width: "80px", opacity: 0.12 }} />
-            <img src="/images/sanguo-deco/mountain.png" alt="" style={{ position: "absolute", bottom: "8%", left: "8%", width: "90px", opacity: 0.15 }} />
-            <img src="/images/sanguo-deco/helmet.png" alt="" style={{ position: "absolute", bottom: "12%", right: "5%", width: "65px", opacity: 0.12, transform: "scaleX(-1)" }} />
-            <img src="/images/sanguo-deco/scrolls.png" alt="" style={{ position: "absolute", top: "45%", left: "3%", width: "55px", opacity: 0.1, transform: "rotate(-5deg)" }} />
-            <img src="/images/sanguo-deco/go-piece.png" alt="" style={{ position: "absolute", top: "50%", right: "6%", width: "45px", opacity: 0.1 }} />
-          </>
-        )}
+        {/* 三国：半透明遮罩让文字更清晰 */}
+        {isSanguo && <div style={{ position: "absolute", inset: 0, background: "rgba(255,252,245,0.55)" }} />}
 
         <div style={{ textAlign: "center", marginBottom: "32px", position: "relative", zIndex: 1 }}>
-          {isSanguo && <div style={{ fontSize: "48px", marginBottom: "12px", opacity: 0.8 }}>⚔️</div>}
           {!isSanguo && <div style={{ fontSize: "36px", marginBottom: "8px", opacity: 0.5, letterSpacing: "12px" }}>☁ ☁ ☁</div>}
-          <h1 style={{ fontSize: isSanguo ? "32px" : "36px", color: homeAccent, marginBottom: "8px", textShadow: "0 2px 4px rgba(0,0,0,0.08)", letterSpacing: "2px" }}>
+          <h1 style={{ fontSize: isSanguo ? "34px" : "36px", color: homeAccent, marginBottom: "8px", textShadow: "0 2px 4px rgba(0,0,0,0.08)", letterSpacing: "2px" }}>
             {homeTitle}
           </h1>
           <p style={{ fontSize: "13px", color: isSanguo ? "#8a7a6a" : "#999", letterSpacing: "1px" }}>{homeSubtitle}</p>
@@ -482,7 +471,7 @@ function App() {
 
         {isSanguo ? (
           /* 三国：古卷风格角色列表 */
-          <div style={{ position: "relative", zIndex: 1, maxWidth: "360px", width: "100%", background: "rgba(255,252,245,0.85)", borderRadius: "16px", padding: "20px", border: "2px solid #c0a878", boxShadow: "0 4px 20px rgba(0,0,0,0.08)", marginBottom: "32px" }}>
+          <div style={{ position: "relative", zIndex: 1, maxWidth: "360px", width: "100%", background: "rgba(255,252,245,0.88)", borderRadius: "16px", padding: "20px", border: "2px solid #c0a878", boxShadow: "0 4px 20px rgba(0,0,0,0.1)", marginBottom: "32px" }}>
             <div style={{ fontSize: "13px", color: "#8a7a6a", textAlign: "center", marginBottom: "12px", fontWeight: "bold" }}>— 十二位英雄，等你揭晓 —</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px" }}>
               {sanguoCharacters.map((c) => (
