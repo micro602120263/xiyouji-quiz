@@ -429,7 +429,7 @@ function App() {
               <div style={{ fontSize: "40px" }}>⚔️</div>
               <div>
                 <div style={{ fontSize: "18px", fontWeight: "bold", color: "#1A1A2E", marginBottom: "4px" }}>你是三国里的谁？</div>
-                <div style={{ fontSize: "12px", color: "#999" }}>20道谋略场景题 · 2分钟完成</div>
+                <div style={{ fontSize: "12px", color: "#999" }}>30道谋略场景题 · 3分钟完成</div>
               </div>
             </div>
           </button>
@@ -446,7 +446,7 @@ function App() {
   if (page === "home") {
     const isSanguo = testType === "sanguo";
     const homeTitle = isSanguo ? "你是三国里的谁？" : "你是《西游记》里的谁？";
-    const homeSubtitle = isSanguo ? "20道谋略场景题 · 约2分钟完成" : "20道趣味场景题 · 约2分钟完成";
+    const homeSubtitle = isSanguo ? "30道谋略场景题 · 约3分钟完成" : "20道趣味场景题 · 约2分钟完成";
     const homeBg = isSanguo
       ? "linear-gradient(180deg, #f5f0e8 0%, #e8e0d0 40%, #d4c8b0 70%, #c0b090 100%)"
       : "linear-gradient(180deg, #FFF8E7 0%, #FFE8C0 40%, #FFDAB9 70%, #FCB69F 100%)";
@@ -469,8 +469,8 @@ function App() {
           {(isSanguo ? sanguoCharacters : characters).map((c: any) => (
             <div key={c.id} style={{ background: "rgba(255,255,255,0.85)", borderRadius: "16px", padding: "14px 6px 10px", textAlign: "center", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", border: "1px solid rgba(255,255,255,0.8)" }}>
               {isSanguo ? (
-                <div style={{ width: 88, height: 88, borderRadius: "50%", background: c.bgGradient, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "32px", margin: "0 auto" }}>
-                  {c.id === "caocao" ? "👑" : c.id === "liubei" ? "🤝" : c.id === "zhugeliang" ? "🪶" : c.id === "guanyu" ? "🐉" : c.id === "zhaoyun" ? "白马" : "🐯"}
+                <div style={{ width: 88, height: 88, borderRadius: "50%", background: c.bgGradient, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", color: "white", fontWeight: "bold", margin: "0 auto", lineHeight: "1.2", padding: "8px" }}>
+                  {c.name}
                 </div>
               ) : (
                 <CharacterAvatar character={c} size={88} />
