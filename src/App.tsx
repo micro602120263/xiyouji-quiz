@@ -333,6 +333,8 @@ function App() {
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [result, setResult] = useState<Character | null>(null);
+  const [showTipModal, setShowTipModal] = useState(false);
+  const [tipMethod, setTipMethod] = useState<"wechat" | "alipay" | null>(null);
 
   const startQuiz = useCallback(() => {
     setAnswers([]); setCurrentQ(0); setPage("quiz");
@@ -478,23 +480,67 @@ function App() {
           </div>
         </div>
 
-        {/* 赞赏码区域 */}
-        <div style={{ maxWidth: "380px", width: "100%", marginTop: "20px", background: "rgba(255,255,255,0.93)", borderRadius: "24px", padding: "28px", boxShadow: "0 4px 20px rgba(0,0,0,0.08)", textAlign: "center", border: "1px solid rgba(255,255,255,0.9)" }}>
-          <div style={{ fontSize: "16px", color: "#333", marginBottom: "6px", fontWeight: "bold" }}>☕ 觉得准？请我喝杯咖啡~</div>
-          <div style={{ fontSize: "12px", color: "#999", marginBottom: "16px" }}>你的支持是我继续创作的动力 ❤️</div>
-          <div style={{ background: "white", borderRadius: "16px", padding: "16px", display: "inline-block", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-            <img src="/images/tip-qr.jpg" alt="赞赏码" style={{ width: "180px", height: "auto", borderRadius: "8px" }} />
-          </div>
-          <div style={{ fontSize: "11px", color: "#bbb", marginTop: "12px" }}>长按识别二维码 · 金额随意</div>
+        {/* 打赏小按钮 */}
+        <div style={{ maxWidth: "380px", width: "100%", marginTop: "16px", display: "flex", justifyContent: "center" }}>
+          <button onClick={() => { setShowTipModal(true); setTipMethod(null); }}
+            style={{ background: "rgba(255,255,255,0.8)", border: "none", borderRadius: "20px", padding: "8px 20px", fontSize: "13px", color: "#888", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", transition: "all 0.2s" }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,1)"; e.currentTarget.style.color = "#555"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.8)"; e.currentTarget.style.color = "#888"; }}
+          >☕ 打赏作者</button>
         </div>
 
         {/* 小红书引流 */}
-        <div style={{ maxWidth: "380px", width: "100%", marginTop: "16px", background: "rgba(255,255,255,0.7)", borderRadius: "16px", padding: "20px", textAlign: "center" }}>
-          <div style={{ fontSize: "13px", color: "#666", lineHeight: "1.8" }}>
-            📱 想看更多有趣测试？<br/>
-            <span style={{ color: result.color, fontWeight: "bold" }}>小红书搜索「{result.name}测试」</span>
+        <div style={{ maxWidth: "380px", width: "100%", marginTop: "12px", background: "rgba(255,255,255,0.7)", borderRadius: "16px", padding: "16px", textAlign: "center" }}>
+          <div style={{ fontSize: "12px", color: "#666", lineHeight: "1.8" }}>
+            🎯 分享给好友，测测TA是西游记里的谁？<br/>
+            <span style={{ color: result.color, fontWeight: "bold" }}>看看你们的组合像不像取经团队~</span>
           </div>
         </div>
+
+        {/* 打赏弹窗 */}
+        {showTipModal && (
+          <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "20px" }}
+            onClick={() => setShowTipModal(false)}>
+            <div style={{ background: "white", borderRadius: "20px", padding: "28px 24px", maxWidth: "320px", width: "100%", textAlign: "center", boxShadow: "0 8px 40px rgba(0,0,0,0.2)" }}
+              onClick={e => e.stopPropagation()}>
+              {!tipMethod ? (
+                <>
+                  <div style={{ fontSize: "18px", fontWeight: "bold", color: "#333", marginBottom: "8px" }}>☕ 请作者喝杯咖啡</div>
+                  <div style={{ fontSize: "13px", color: "#999", marginBottom: "24px" }}>你的支持是创作的动力 ❤️</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    <button onClick={() => setTipMethod("wechat")}
+                      style={{ padding: "14px", background: "#07C160", color: "white", border: "none", borderRadius: "12px", fontSize: "15px", fontWeight: "bold", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                      💬 微信赞赏
+                    </button>
+                    <button onClick={() => setTipMethod("alipay")}
+                      style={{ padding: "14px", background: "#1677FF", color: "white", border: "none", borderRadius: "12px", fontSize: "15px", fontWeight: "bold", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                      💰 支付宝赞赏
+                    </button>
+                  </div>
+                  <button onClick={() => setShowTipModal(false)}
+                    style={{ marginTop: "16px", background: "none", border: "none", color: "#bbb", fontSize: "13px", cursor: "pointer" }}>取消</button>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize: "16px", fontWeight: "bold", color: "#333", marginBottom: "6px" }}>
+                    {tipMethod === "wechat" ? "💬 微信赞赏" : "💰 支付宝赞赏"}
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#999", marginBottom: "16px" }}>长按识别二维码 · 金额随意</div>
+                  <div style={{ background: "#f8f8f8", borderRadius: "12px", padding: "12px", display: "inline-block" }}>
+                    <img src={tipMethod === "wechat" ? "/images/tip-qr.jpg" : "/images/alipay-qr.jpg"}
+                      alt="收款码" style={{ width: "200px", height: "auto", borderRadius: "8px" }} />
+                  </div>
+                  <div style={{ marginTop: "16px", display: "flex", gap: "10px", justifyContent: "center" }}>
+                    <button onClick={() => setTipMethod(null)}
+                      style={{ padding: "10px 20px", background: "#f5f5f5", color: "#666", border: "none", borderRadius: "10px", fontSize: "13px", cursor: "pointer" }}>← 返回</button>
+                    <button onClick={() => setShowTipModal(false)}
+                      style={{ padding: "10px 20px", background: "#f5f5f5", color: "#666", border: "none", borderRadius: "10px", fontSize: "13px", cursor: "pointer" }}>关闭</button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
