@@ -456,28 +456,56 @@ function App() {
         minHeight: "100vh",
         background: homeBg,
         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-        padding: "40px 20px", fontFamily: "'Noto Serif SC', 'STKaiti', serif"
+        padding: "40px 20px", fontFamily: "'Noto Serif SC', 'STKaiti', serif",
+        position: "relative", overflow: "hidden"
       }}>
-        <div style={{ textAlign: "center", marginBottom: "32px" }}>
-          <div style={{ fontSize: "36px", marginBottom: "8px", opacity: 0.5, letterSpacing: "12px" }}>{isSanguo ? "⚔ ⚔ ⚔" : "☁ ☁ ☁"}</div>
-          <h1 style={{ fontSize: "36px", color: homeAccent, marginBottom: "8px", textShadow: "0 2px 4px rgba(0,0,0,0.08)", letterSpacing: "2px" }}>
+        {/* 三国水墨装饰元素 */}
+        {isSanguo && (
+          <>
+            <img src="/images/sanguo-deco/sword.png" alt="" style={{ position: "absolute", top: "8%", left: "5%", width: "60px", opacity: 0.15, transform: "rotate(-15deg)" }} />
+            <img src="/images/sanguo-deco/dragon.png" alt="" style={{ position: "absolute", top: "5%", right: "8%", width: "80px", opacity: 0.12 }} />
+            <img src="/images/sanguo-deco/mountain.png" alt="" style={{ position: "absolute", bottom: "8%", left: "8%", width: "90px", opacity: 0.15 }} />
+            <img src="/images/sanguo-deco/helmet.png" alt="" style={{ position: "absolute", bottom: "12%", right: "5%", width: "65px", opacity: 0.12, transform: "scaleX(-1)" }} />
+            <img src="/images/sanguo-deco/scrolls.png" alt="" style={{ position: "absolute", top: "45%", left: "3%", width: "55px", opacity: 0.1, transform: "rotate(-5deg)" }} />
+            <img src="/images/sanguo-deco/go-piece.png" alt="" style={{ position: "absolute", top: "50%", right: "6%", width: "45px", opacity: 0.1 }} />
+          </>
+        )}
+
+        <div style={{ textAlign: "center", marginBottom: "32px", position: "relative", zIndex: 1 }}>
+          {isSanguo && <div style={{ fontSize: "48px", marginBottom: "12px", opacity: 0.8 }}>⚔️</div>}
+          {!isSanguo && <div style={{ fontSize: "36px", marginBottom: "8px", opacity: 0.5, letterSpacing: "12px" }}>☁ ☁ ☁</div>}
+          <h1 style={{ fontSize: isSanguo ? "32px" : "36px", color: homeAccent, marginBottom: "8px", textShadow: "0 2px 4px rgba(0,0,0,0.08)", letterSpacing: "2px" }}>
             {homeTitle}
           </h1>
-          <p style={{ fontSize: "13px", color: "#999", letterSpacing: "1px" }}>{homeSubtitle}</p>
+          <p style={{ fontSize: "13px", color: isSanguo ? "#8a7a6a" : "#999", letterSpacing: "1px" }}>{homeSubtitle}</p>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "14px", marginBottom: "36px", maxWidth: "360px", width: "100%" }}>
-          {(isSanguo ? sanguoCharacters : characters).map((c: any) => (
-            <div key={c.id} style={{ background: "rgba(255,255,255,0.85)", borderRadius: "16px", padding: "14px 6px 10px", textAlign: "center", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", border: "1px solid rgba(255,255,255,0.8)" }}>
-              {isSanguo ? (
-                <div style={{ width: 88, height: 88, borderRadius: "50%", background: c.bgGradient, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", color: "white", fontWeight: "bold", margin: "0 auto", lineHeight: "1.2", padding: "8px" }}>
-                  {c.name}
+
+        {isSanguo ? (
+          /* 三国：古卷风格角色列表 */
+          <div style={{ position: "relative", zIndex: 1, maxWidth: "360px", width: "100%", background: "rgba(255,252,245,0.85)", borderRadius: "16px", padding: "20px", border: "2px solid #c0a878", boxShadow: "0 4px 20px rgba(0,0,0,0.08)", marginBottom: "32px" }}>
+            <div style={{ fontSize: "13px", color: "#8a7a6a", textAlign: "center", marginBottom: "12px", fontWeight: "bold" }}>— 十二位英雄，等你揭晓 —</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px" }}>
+              {sanguoCharacters.map((c) => (
+                <div key={c.id} style={{ textAlign: "center", padding: "6px 2px" }}>
+                  <div style={{ width: 44, height: 44, borderRadius: "50%", background: c.bgGradient, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", color: "white", fontWeight: "bold", margin: "0 auto 4px", lineHeight: "1.2" }}>
+                    {c.name.slice(0,1)}
+                  </div>
+                  <div style={{ fontSize: "10px", color: "#555" }}>{c.name}</div>
                 </div>
-              ) : (
-                <CharacterAvatar character={c} size={88} />
-              )}
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        ) : (
+          /* 西游：头像网格 */
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "14px", marginBottom: "36px", maxWidth: "360px", width: "100%", position: "relative", zIndex: 1 }}>
+            {characters.map((c) => (
+              <div key={c.id} style={{ background: "rgba(255,255,255,0.85)", borderRadius: "16px", padding: "14px 6px 10px", textAlign: "center", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", border: "1px solid rgba(255,255,255,0.8)" }}>
+                <CharacterAvatar character={c} size={88} />
+              </div>
+            ))}
+          </div>
+        )}
+
         <button onClick={startQuiz} style={{
           background: isSanguo ? "linear-gradient(135deg, #2C3E50 0%, #1A1A2E 100%)" : "linear-gradient(135deg, #C41E3A 0%, #E74C3C 100%)", color: "white", border: "none",
           padding: "15px 52px", borderRadius: "50px", fontSize: "17px", fontWeight: "bold", cursor: "pointer",
