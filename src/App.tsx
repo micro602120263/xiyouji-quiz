@@ -1,6 +1,8 @@
 import { useState, useCallback } from "react";
+import { sanguoCharacters, sanguoQuestions, calculateSanguoResult, calculateDimensionScores, dimensions } from "./packs/sanguo";
 
 // ===== 数据定义 =====
+type TestType = "xiyouji" | "sanguo";
 
 interface Question {
   id: number;
@@ -329,12 +331,29 @@ function CharacterAvatar({ character, size = 120 }: { character: Character; size
 
 // ===== 主应用 =====
 function App() {
-  const [page, setPage] = useState<"home" | "quiz" | "result">("home");
+  const [page, setPage] = useState<"select" | "home" | "quiz" | "result">("select");
+  const [testType, setTestType] = useState<TestType>("xiyouji");
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [result, setResult] = useState<Character | null>(null);
+  const [sanguoResult, setSanguoResult] = useState<any>(null);
+  const [dimScores, setDimScores] = useState<Record<string, number> | null>(null);
   const [showTipModal, setShowTipModal] = useState(false);
   const [tipMethod, setTipMethod] = useState<"wechat" | "alipay" | null>(null);
+
+  // 获取当前测试的问题和角色
+  const currentQuestions = testType === "sanguo" ? sanguoQuestions : questions;
+  const currentCharacters = testType === "sanguo" ? sanguoCharacters : characters;
+
+  const selectTest = useCallback((type: TestType) => {
+    setTestType(type);
+    setAnswers([]);
+    setCurrentQ(0);
+    setResult(null);
+    setSanguoResult(null);
+    setDimScores(null);
+    setPage("home");
+  }, []);
 
   const startQuiz = useCallback(() => {
     setAnswers([]); setCurrentQ(0); setPage("quiz");
@@ -343,20 +362,26 @@ function App() {
   const answerQuestion = useCallback((optIndex: number) => {
     const newAnswers = [...answers, optIndex];
     setAnswers(newAnswers);
-    if (currentQ < questions.length - 1) {
+    if (newAnswers.length < currentQuestions.length) {
       setCurrentQ(currentQ + 1);
     } else {
-      setResult(calculateResult(newAnswers));
+      if (testType === "sanguo") {
+        setSanguoResult(calculateSanguoResult(newAnswers));
+        setDimScores(calculateDimensionScores(newAnswers));
+      } else {
+        setResult(calculateResult(newAnswers));
+      }
       setPage("result");
     }
-  }, [answers, currentQ]);
+  }, [answers, currentQ, testType, currentQuestions.length]);
 
   const restart = useCallback(() => {
-    setPage("home"); setResult(null); setAnswers([]); setCurrentQ(0);
+    setPage("select"); setResult(null); setSanguoResult(null); setDimScores(null);
+    setAnswers([]); setCurrentQ(0);
   }, []);
 
-  // ===== 首页 =====
-  if (page === "home") {
+  // ===== 测试选择页 =====
+  if (page === "select") {
     return (
       <div style={{
         minHeight: "100vh",
@@ -364,22 +389,97 @@ function App() {
         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
         padding: "40px 20px", fontFamily: "'Noto Serif SC', 'STKaiti', serif"
       }}>
-        <div style={{ textAlign: "center", marginBottom: "32px" }}>
+        <div style={{ textAlign: "center", marginBottom: "40px" }}>
           <div style={{ fontSize: "36px", marginBottom: "8px", opacity: 0.5, letterSpacing: "12px" }}>☁ ☁ ☁</div>
-          <h1 style={{ fontSize: "36px", color: "#8B0000", marginBottom: "8px", textShadow: "0 2px 4px rgba(0,0,0,0.08)", letterSpacing: "2px" }}>
-            你是《西游记》里的谁？
+          <h1 style={{ fontSize: "32px", color: "#8B0000", marginBottom: "8px", textShadow: "0 2px 4px rgba(0,0,0,0.08)", letterSpacing: "2px" }}>
+            你是谁？
           </h1>
-          <p style={{ fontSize: "13px", color: "#999", letterSpacing: "1px" }}>20道趣味场景题 · 约2分钟完成</p>
+          <p style={{ fontSize: "13px", color: "#999", letterSpacing: "1px" }}>选择一个测试，发现你的另一面</p>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px", maxWidth: "340px", width: "100%" }}>
+          {/* 西游记测试 */}
+          <button onClick={() => selectTest("xiyouji")}
+            style={{
+              background: "rgba(255,255,255,0.9)", borderRadius: "20px", padding: "24px 20px",
+              border: "2px solid rgba(196,30,58,0.2)", cursor: "pointer", textAlign: "left",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.06)", transition: "all 0.2s"
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 30px rgba(0,0,0,0.1)"; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.06)"; }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+              <div style={{ fontSize: "40px" }}>🐵</div>
+              <div>
+                <div style={{ fontSize: "18px", fontWeight: "bold", color: "#C41E3A", marginBottom: "4px" }}>你是西游记里的谁？</div>
+                <div style={{ fontSize: "12px", color: "#999" }}>20道趣味场景题 · 2分钟完成</div>
+              </div>
+            </div>
+          </button>
+          {/* 三国测试 */}
+          <button onClick={() => selectTest("sanguo")}
+            style={{
+              background: "rgba(255,255,255,0.9)", borderRadius: "20px", padding: "24px 20px",
+              border: "2px solid rgba(42,42,42,0.2)", cursor: "pointer", textAlign: "left",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.06)", transition: "all 0.2s"
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 30px rgba(0,0,0,0.1)"; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.06)"; }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+              <div style={{ fontSize: "40px" }}>⚔️</div>
+              <div>
+                <div style={{ fontSize: "18px", fontWeight: "bold", color: "#1A1A2E", marginBottom: "4px" }}>你是三国里的谁？</div>
+                <div style={{ fontSize: "12px", color: "#999" }}>20道谋略场景题 · 2分钟完成</div>
+              </div>
+            </div>
+          </button>
+          {/* 更多测试敬请期待 */}
+          <div style={{ textAlign: "center", padding: "16px", color: "#bbb", fontSize: "12px" }}>
+            🚧 更多测试正在开发中...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ===== 首页 =====
+  if (page === "home") {
+    const isSanguo = testType === "sanguo";
+    const homeTitle = isSanguo ? "你是三国里的谁？" : "你是《西游记》里的谁？";
+    const homeSubtitle = isSanguo ? "20道谋略场景题 · 约2分钟完成" : "20道趣味场景题 · 约2分钟完成";
+    const homeBg = isSanguo
+      ? "linear-gradient(180deg, #f5f0e8 0%, #e8e0d0 40%, #d4c8b0 70%, #c0b090 100%)"
+      : "linear-gradient(180deg, #FFF8E7 0%, #FFE8C0 40%, #FFDAB9 70%, #FCB69F 100%)";
+    const homeAccent = isSanguo ? "#1A1A2E" : "#C41E3A";
+    return (
+      <div style={{
+        minHeight: "100vh",
+        background: homeBg,
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        padding: "40px 20px", fontFamily: "'Noto Serif SC', 'STKaiti', serif"
+      }}>
+        <div style={{ textAlign: "center", marginBottom: "32px" }}>
+          <div style={{ fontSize: "36px", marginBottom: "8px", opacity: 0.5, letterSpacing: "12px" }}>{isSanguo ? "⚔ ⚔ ⚔" : "☁ ☁ ☁"}</div>
+          <h1 style={{ fontSize: "36px", color: homeAccent, marginBottom: "8px", textShadow: "0 2px 4px rgba(0,0,0,0.08)", letterSpacing: "2px" }}>
+            {homeTitle}
+          </h1>
+          <p style={{ fontSize: "13px", color: "#999", letterSpacing: "1px" }}>{homeSubtitle}</p>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "14px", marginBottom: "36px", maxWidth: "360px", width: "100%" }}>
-          {characters.map((c) => (
+          {(isSanguo ? sanguoCharacters : characters).map((c: any) => (
             <div key={c.id} style={{ background: "rgba(255,255,255,0.85)", borderRadius: "16px", padding: "14px 6px 10px", textAlign: "center", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", border: "1px solid rgba(255,255,255,0.8)" }}>
-              <CharacterAvatar character={c} size={88} />
+              {isSanguo ? (
+                <div style={{ width: 88, height: 88, borderRadius: "50%", background: c.bgGradient, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "32px", margin: "0 auto" }}>
+                  {c.id === "caocao" ? "👑" : c.id === "liubei" ? "🤝" : c.id === "zhugeliang" ? "🪶" : c.id === "guanyu" ? "🐉" : c.id === "zhaoyun" ? "白马" : "🐯"}
+                </div>
+              ) : (
+                <CharacterAvatar character={c} size={88} />
+              )}
             </div>
           ))}
         </div>
         <button onClick={startQuiz} style={{
-          background: "linear-gradient(135deg, #C41E3A 0%, #E74C3C 100%)", color: "white", border: "none",
+          background: isSanguo ? "linear-gradient(135deg, #2C3E50 0%, #1A1A2E 100%)" : "linear-gradient(135deg, #C41E3A 0%, #E74C3C 100%)", color: "white", border: "none",
           padding: "15px 52px", borderRadius: "50px", fontSize: "17px", fontWeight: "bold", cursor: "pointer",
           boxShadow: "0 4px 16px rgba(196,30,58,0.35)", letterSpacing: "2px", transition: "transform 0.2s"
         }}
@@ -392,21 +492,25 @@ function App() {
 
   // ===== 答题页 =====
   if (page === "quiz") {
-    const q = questions[currentQ];
-    const progress = ((currentQ + 1) / questions.length) * 100;
+    const q = currentQuestions[currentQ];
+    const progress = ((currentQ + 1) / currentQuestions.length) * 100;
+    const accentColor = testType === "sanguo" ? "#1A1A2E" : "#C41E3A";
+    const bgStyle = testType === "sanguo"
+      ? "linear-gradient(180deg, #f5f0e8 0%, #e8e0d0 100%)"
+      : "linear-gradient(180deg, #FFF8E7 0%, #FFECD2 100%)";
     return (
       <div style={{
-        minHeight: "100vh", background: "linear-gradient(180deg, #FFF8E7 0%, #FFECD2 100%)",
+        minHeight: "100vh", background: bgStyle,
         padding: "24px 16px", fontFamily: "'Noto Serif SC', 'STKaiti', serif",
         display: "flex", flexDirection: "column", alignItems: "center"
       }}>
         <div style={{ width: "100%", maxWidth: "560px", marginBottom: "28px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontSize: "12px", color: "#aaa" }}>
-            <span>第 {currentQ + 1}/{questions.length} 题</span>
-            <span style={{ color: "#C41E3A", fontWeight: "bold" }}>{Math.round(progress)}%</span>
+            <span>第 {currentQ + 1}/{currentQuestions.length} 题</span>
+            <span style={{ color: accentColor, fontWeight: "bold" }}>{Math.round(progress)}%</span>
           </div>
           <div style={{ height: "4px", background: "rgba(0,0,0,0.06)", borderRadius: "2px", overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${progress}%`, background: "linear-gradient(90deg, #C41E3A, #D4A017)", borderRadius: "2px", transition: "width 0.4s ease" }} />
+            <div style={{ height: "100%", width: `${progress}%`, background: `linear-gradient(90deg, ${accentColor}, #D4A017)`, borderRadius: "2px", transition: "width 0.4s ease" }} />
           </div>
         </div>
         <div style={{ maxWidth: "560px", width: "100%", background: "rgba(255,255,255,0.92)", borderRadius: "20px", padding: "32px 28px", boxShadow: "0 4px 20px rgba(0,0,0,0.06)", border: "1px solid rgba(255,255,255,0.9)" }}>
@@ -421,7 +525,7 @@ function App() {
                   borderRadius: "12px", cursor: "pointer", fontSize: "14px", color: "#444",
                   textAlign: "left", transition: "all 0.2s", lineHeight: "1.4"
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "#C41E3A"; e.currentTarget.style.background = "#FFF8F8"; e.currentTarget.style.transform = "translateX(4px)"; }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = accentColor; e.currentTarget.style.background = testType === "sanguo" ? "#f8f6f2" : "#FFF8F8"; e.currentTarget.style.transform = "translateX(4px)"; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = "#EDE8E0"; e.currentTarget.style.background = "white"; e.currentTarget.style.transform = "translateX(0)"; }}
               >{opt.label}</button>
             ))}
@@ -431,7 +535,144 @@ function App() {
     );
   }
 
-  // ===== 结果页 =====
+  // ===== 三国结果页 =====
+  if (page === "result" && sanguoResult && dimScores) {
+    const r = sanguoResult;
+    const shareText = `我是《三国》里的${r.name}｜${r.title}\n「${r.motto}」\n${r.rarity}的人是${r.name}，你是哪个？扫码测测👇`;
+
+    // 计算五维最大值（用于标准化）
+    const maxDim = Math.max(...Object.values(dimScores) as number[], 1);
+
+    return (
+      <div style={{
+        minHeight: "100vh", background: r.bgGradient, padding: "40px 16px",
+        fontFamily: "'Noto Serif SC', 'STKaiti', serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center"
+      }}>
+        {/* 主结果卡片 */}
+        <div style={{ maxWidth: "380px", width: "100%", background: "rgba(255,255,255,0.93)", borderRadius: "24px", padding: "36px 28px", boxShadow: "0 8px 40px rgba(0,0,0,0.12)", textAlign: "center", border: "1px solid rgba(255,255,255,0.9)" }}>
+          <div style={{ fontSize: "48px", marginBottom: "12px" }}>⚔️</div>
+          <div style={{ fontSize: "12px", color: r.color, letterSpacing: "4px", marginBottom: "6px", fontWeight: "bold" }}>{r.title}</div>
+          <h1 style={{ fontSize: "34px", color: "#1a1a2e", margin: "0 0 10px", fontWeight: "900", letterSpacing: "2px" }}>{r.name}</h1>
+          <p style={{ fontSize: "14px", color: "#888", fontStyle: "italic", margin: "0 0 20px", lineHeight: "1.6" }}>「{r.motto}」</p>
+
+          {/* 五维能力图 */}
+          <div style={{ background: "#f8f6f2", borderRadius: "16px", padding: "20px", marginBottom: "20px" }}>
+            <div style={{ fontSize: "13px", color: "#888", marginBottom: "16px", fontWeight: "bold" }}>⚔️ 五维能力</div>
+            {dimensions.map(dim => {
+              const score = dimScores[dim.id] || 0;
+              const percent = Math.round((score / maxDim) * 100);
+              return (
+                <div key={dim.id} style={{ marginBottom: "10px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "4px" }}>
+                    <span style={{ color: "#555" }}>{dim.icon} {dim.name}</span>
+                    <span style={{ color: dim.color, fontWeight: "bold" }}>{score}</span>
+                  </div>
+                  <div style={{ height: "6px", background: "#e8e4de", borderRadius: "3px", overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${percent}%`, background: dim.color, borderRadius: "3px", transition: "width 0.6s ease" }} />
+                  </div>
+                </div>
+              );
+            })}
+            <div style={{ fontSize: "11px", color: "#aaa", marginTop: "8px" }}>最突出维度：{r.dimensionHighlight}</div>
+          </div>
+
+          <p style={{ fontSize: "13px", color: "#555", lineHeight: "1.9", margin: "0 0 24px", textAlign: "left", padding: "0 4px" }}>{r.description}</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "20px" }}>
+            <div style={{ background: "#F8F9FA", borderRadius: "12px", padding: "14px", textAlign: "left" }}>
+              <div style={{ fontSize: "11px", color: "#aaa", marginBottom: "8px", fontWeight: "bold" }}>✨ 你的优势</div>
+              {r.strengths.map(s => <div key={s} style={{ fontSize: "12px", color: "#444", marginBottom: "3px" }}>{s}</div>)}
+            </div>
+            <div style={{ background: "#FFF5F5", borderRadius: "12px", padding: "14px", textAlign: "left" }}>
+              <div style={{ fontSize: "11px", color: "#aaa", marginBottom: "8px", fontWeight: "bold" }}>⚠️ 可能的不足</div>
+              {r.weaknesses.map(w => <div key={w} style={{ fontSize: "12px", color: "#444", marginBottom: "3px" }}>{w}</div>)}
+            </div>
+          </div>
+          <div style={{ background: "#F0F8FF", borderRadius: "12px", padding: "14px", marginBottom: "20px", textAlign: "left" }}>
+            <div style={{ fontSize: "11px", color: "#aaa", marginBottom: "6px", fontWeight: "bold" }}>💼 适合你的角色</div>
+            <div style={{ fontSize: "13px", color: "#444", marginBottom: "10px" }}>{r.career}</div>
+            <div style={{ fontSize: "11px", color: "#aaa", marginBottom: "6px", fontWeight: "bold" }}>💕 恋爱风格</div>
+            <div style={{ fontSize: "13px", color: "#444" }}>{r.loveStyle}</div>
+          </div>
+          <div style={{ padding: "10px", borderRadius: "10px", background: `${r.color}10`, border: `1px solid ${r.color}25`, marginBottom: "24px" }}>
+            <span style={{ fontSize: "13px", color: r.color, fontWeight: "bold" }}>🏆 你是 {r.rarity} 的人</span>
+          </div>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button onClick={restart} style={{ flex: 1, padding: "13px", background: r.bgGradient, color: "white", border: "none", borderRadius: "12px", fontSize: "14px", fontWeight: "bold", cursor: "pointer", transition: "transform 0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.transform = "scale(1.03)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+            >再测一次</button>
+            <button onClick={() => {
+              if (navigator.share) navigator.share({ title: "三国英雄测试", text: shareText });
+              else { navigator.clipboard?.writeText(shareText); alert("已复制到剪贴板！发到小红书或朋友圈吧~"); }
+            }} style={{ flex: 1, padding: "13px", background: "white", color: r.color, border: `1.5px solid ${r.color}`, borderRadius: "12px", fontSize: "14px", fontWeight: "bold", cursor: "pointer", transition: "transform 0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.transform = "scale(1.03)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+            >📤 分享结果</button>
+          </div>
+        </div>
+
+        {/* 打赏小按钮 */}
+        <div style={{ maxWidth: "380px", width: "100%", marginTop: "16px", display: "flex", justifyContent: "center" }}>
+          <button onClick={() => { setShowTipModal(true); setTipMethod(null); }}
+            style={{ background: "rgba(255,255,255,0.8)", border: "none", borderRadius: "20px", padding: "8px 20px", fontSize: "13px", color: "#888", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", transition: "all 0.2s" }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,1)"; e.currentTarget.style.color = "#555"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.8)"; e.currentTarget.style.color = "#888"; }}
+          >☕ 打赏作者</button>
+        </div>
+
+        {/* 引流 */}
+        <div style={{ maxWidth: "380px", width: "100%", marginTop: "12px", background: "rgba(255,255,255,0.7)", borderRadius: "16px", padding: "16px", textAlign: "center" }}>
+          <div style={{ fontSize: "12px", color: "#666", lineHeight: "1.8" }}>
+            🎯 分享给好友，测测TA是三国里的谁？<br/>
+            <span style={{ color: r.color, fontWeight: "bold" }}>看看你们能组个什么阵容~</span>
+          </div>
+        </div>
+
+        {/* 打赏弹窗 */}
+        {showTipModal && (
+          <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "20px" }}
+            onClick={() => setShowTipModal(false)}>
+            <div style={{ background: "white", borderRadius: "20px", padding: "28px 24px", maxWidth: "320px", width: "100%", textAlign: "center", boxShadow: "0 8px 40px rgba(0,0,0,0.2)" }}
+              onClick={e => e.stopPropagation()}>
+              {!tipMethod ? (
+                <>
+                  <div style={{ fontSize: "18px", fontWeight: "bold", color: "#333", marginBottom: "8px" }}>☕ 请作者喝杯咖啡</div>
+                  <div style={{ fontSize: "13px", color: "#999", marginBottom: "24px" }}>你的支持是创作的动力 ❤️</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    <button onClick={() => setTipMethod("wechat")}
+                      style={{ padding: "14px", background: "#07C160", color: "white", border: "none", borderRadius: "12px", fontSize: "15px", fontWeight: "bold", cursor: "pointer" }}>💬 微信赞赏</button>
+                    <button onClick={() => setTipMethod("alipay")}
+                      style={{ padding: "14px", background: "#1677FF", color: "white", border: "none", borderRadius: "12px", fontSize: "15px", fontWeight: "bold", cursor: "pointer" }}>💰 支付宝赞赏</button>
+                  </div>
+                  <button onClick={() => setShowTipModal(false)}
+                    style={{ marginTop: "16px", background: "none", border: "none", color: "#bbb", fontSize: "13px", cursor: "pointer" }}>取消</button>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize: "16px", fontWeight: "bold", color: "#333", marginBottom: "6px" }}>
+                    {tipMethod === "wechat" ? "💬 微信赞赏" : "💰 支付宝赞赏"}
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#999", marginBottom: "16px" }}>长按识别二维码 · 金额随意</div>
+                  <div style={{ background: "#f8f8f8", borderRadius: "12px", padding: "12px", display: "inline-block" }}>
+                    <img src={tipMethod === "wechat" ? "/images/tip-qr.jpg" : "/images/alipay-qr.jpg"}
+                      alt="收款码" style={{ width: "200px", height: "auto", borderRadius: "8px" }} />
+                  </div>
+                  <div style={{ marginTop: "16px", display: "flex", gap: "10px", justifyContent: "center" }}>
+                    <button onClick={() => setTipMethod(null)}
+                      style={{ padding: "10px 20px", background: "#f5f5f5", color: "#666", border: "none", borderRadius: "10px", fontSize: "13px", cursor: "pointer" }}>← 返回</button>
+                    <button onClick={() => setShowTipModal(false)}
+                      style={{ padding: "10px 20px", background: "#f5f5f5", color: "#666", border: "none", borderRadius: "10px", fontSize: "13px", cursor: "pointer" }}>关闭</button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ===== 西游结果页 =====
   if (page === "result" && result) {
     const shareText = `我是《西游记》里的${result.name}｜${result.title}\n「${result.motto}」\n${result.rarity}的人是${result.name}，你是哪个？扫码测测👇`;
     return (
